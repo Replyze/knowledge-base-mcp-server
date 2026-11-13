@@ -89,7 +89,7 @@ Two read-only tools. They see exactly what a visitor of the help center sees: pu
 
 `get_article` returns `{ "article": { "id", "title", "slug", "locale", "url", "content", "updated_at" } }`, where `content` is the article as plain text (up to 20,000 characters) and `updated_at` is ISO 8601 in UTC.
 
-On `initialize`, the server tells the assistant whose help center it is and to answer from the articles and link the article URL, so most assistants cite the page without being asked.
+When an assistant connects (`initialize`, or `server/discover` in protocol `2026-07-28`), the server tells it whose help center it is and to answer from the articles and link the article URL, so most assistants cite the page without being asked.
 
 ## Connect an assistant
 
@@ -206,25 +206,34 @@ The VS Code link is an ordinary `https` link and works anywhere. The Cursor link
 For client authors and debugging. The server follows the MCP spec's Streamable HTTP transport, stateless:
 
 - JSON-RPC 2.0 messages are POSTed to the URL, and each request gets one JSON answer. There is no event stream and no session: GET and DELETE answer `405`.
-- Protocol versions `2025-06-18`, `2025-03-26` and `2024-11-05`: `initialize` answers in the client's version when it is one of these, and in `2025-06-18` otherwise. A request whose `MCP-Protocol-Version` header names another version gets `400`; that is how clients that speak both the `2026-07-28` revision and the `initialize`-based ones find out to fall back to `initialize`.
-- Methods: `initialize`, `ping`, `tools/list`, `tools/call`. Notifications get `202` with no body. Batches (older clients) are accepted.
+- Protocol versions: `2026-07-28`, and the `initialize`-based `2025-11-25`, `2025-06-18`, `2025-03-26` and `2024-11-05`. Clients that speak `2026-07-28` find it with `server/discover`; the others use `initialize` as before.
+- `2026-07-28` has no handshake. Every request names the version and the client's capabilities in `params._meta` (`io.modelcontextprotocol/protocolVersion`, `io.modelcontextprotocol/clientCapabilities`) and repeats them in headers: `MCP-Protocol-Version`, `Mcp-Method`, and `Mcp-Name` on `tools/call`. A missing header or one that disagrees with the body gets `400`. Every result carries `resultType: "complete"` and the server's name and version in `_meta["io.modelcontextprotocol/serverInfo"]`.
+- The `initialize`-based versions: `initialize` answers in the client's version when it is one of the four, and in `2025-11-25` otherwise. Their answers have no `resultType` and no caching hints.
+- Methods: `server/discover`, `tools/list` and `tools/call` in `2026-07-28`; `initialize`, `ping`, `tools/list` and `tools/call` in the older versions. Notifications get `202` with no body. Batches are accepted from older clients only. The tool list doesn't push changes (`listChanged: false`), so there is no `subscriptions/listen`.
 - Tool results come both as text (the JSON, which every client reads) and as `structuredContent`. A tool that fails returns `isError: true` with a message.
-- Requests are rate limited per IP. Answers carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`, and are never cached (`Cache-Control: no-store`).
+- Requests are rate limited per IP. Answers carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`, and HTTP caches may not keep them (`Cache-Control: no-store`). In `2026-07-28`, `server/discover` and `tools/list` tell the MCP client itself how long it may reuse them: `ttlMs: 300000` (5 minutes) and `cacheScope: "public"`, because every caller gets the same tools.
 
-Try it with cURL ([`examples/curl.sh`](examples/curl.sh) runs these three calls):
+Try it with cURL. In `2025-11-25`, `initialize` first, then the tools:
 
 ```bash
 URL=https://client.replyze.chat/api/mcp/kb/acme-help
 
 curl -s "$URL" -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"1.0"}}}'
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-11-25","capabilities":{},"clientInfo":{"name":"curl","version":"1.0"}}}'
 
-curl -s "$URL" -H "Content-Type: application/json" \
+curl -s "$URL" -H "Content-Type: application/json" -H "MCP-Protocol-Version: 2025-11-25" \
   -d '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"search_articles","arguments":{"query":"how long does shipping take"}}}'
-
-curl -s "$URL" -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_article","arguments":{"slug":"shipping-times"}}}'
 ```
+
+In `2026-07-28`, with no `initialize`:
+
+```bash
+curl -s "$URL" -H "Content-Type: application/json" \
+  -H "MCP-Protocol-Version: 2026-07-28" -H "Mcp-Method: tools/call" -H "Mcp-Name: get_article" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"get_article","arguments":{"slug":"shipping-times"},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}}}'
+```
+
+[`examples/curl.sh`](examples/curl.sh) runs a whole `2026-07-28` session: `server/discover`, `search_articles`, then `get_article` for the first match. The [MCP Inspector](https://github.com/modelcontextprotocol/inspector) CLI uses `2026-07-28` with `--protocol-era auto` (or `modern`) and `2025-11-25` by default.
 
 ## Errors
 
@@ -233,8 +242,13 @@ curl -s "$URL" -H "Content-Type: application/json" \
 | `404` | There is no help center with this slug, it is switched off, or its plan doesn't include it. | JSON-RPC error `-32600`, "There is no public help center at this address." |
 | `429` | Too many requests from your IP. Wait `Retry-After` seconds. | JSON-RPC error `-32600`, "Too many requests. Try again in N seconds." |
 | `405` | A GET or DELETE. | The server takes POST only. |
-| `400` | A body that isn't JSON (`-32700`), or an `MCP-Protocol-Version` header with a version the server doesn't speak (`-32600`, with the supported versions). | JSON-RPC error. |
-| `200` | An unknown method. | JSON-RPC error `-32601`. |
+| `400` | A body that isn't JSON. | JSON-RPC error `-32700`. |
+| `400` | An `MCP-Protocol-Version` header, or a `2026-07-28` `_meta`, with a version the server doesn't speak. | JSON-RPC error `-32022`; `data.supported` lists the versions it speaks, `data.requested` the one you sent. |
+| `400` | `2026-07-28`: the `MCP-Protocol-Version`, `Mcp-Method` or `Mcp-Name` header is missing or disagrees with the body, or `initialize` was sent with `MCP-Protocol-Version: 2026-07-28`. | JSON-RPC error `-32020`. |
+| `400` | `2026-07-28`: `params._meta` lacks `io.modelcontextprotocol/protocolVersion` or `io.modelcontextprotocol/clientCapabilities`, or one of its values has the wrong type. | JSON-RPC error `-32602`. |
+| `400` | `2026-07-28`: a batch, or a body that isn't a JSON-RPC 2.0 request. | JSON-RPC error `-32600`. |
+| `404` | `2026-07-28`: a method the server doesn't have, including `initialize` and `ping`, which that version doesn't define. | JSON-RPC error `-32601`. |
+| `200` | An unknown method, in the older versions. | JSON-RPC error `-32601`. |
 | `200` | An unknown tool. | JSON-RPC error `-32602`. |
 | `200` | Arguments that don't fit the tool's schema. | A tool result with `isError: true` and `structuredContent.error` = `invalid_arguments`. |
 | `200` | `get_article` for an article that isn't published in this help center. | A tool result with `isError: true` and `structuredContent.error` = `tool_error`: "This help center has no published article like that. Use search_articles to find one." |
@@ -259,7 +273,7 @@ If the help center has articles in several languages, `search_articles` takes a 
 - [replyze](https://github.com/Replyze/replyze): the chat widget, its JavaScript API, the REST API and webhooks
 - [add-live-chat-to-website](https://github.com/Replyze/add-live-chat-to-website): the chat on any website, platform by platform
 
-The tools, the protocol and the error behavior on this page follow the server's source and its test suite (November 2026).
+The tools, the protocol and the error behavior on this page follow the server's source and its test suite, and were checked with the MCP Inspector and the official TypeScript and Python SDKs (November 2026).
 
 ## For registries
 
