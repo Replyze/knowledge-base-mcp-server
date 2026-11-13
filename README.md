@@ -33,8 +33,8 @@ https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
 
 ## Contents
 
-[Why](#why-put-your-help-center-in-an-ai-assistant) ·
 [Quickstart](#quickstart) ·
+[Why](#why-put-your-help-center-in-an-ai-assistant) ·
 [Turn it on](#turn-it-on) ·
 [Tools](#tools) ·
 [Connect an assistant](#connect-an-assistant) ([Claude](#claudeai-and-claude-desktop) · [Claude Code](#claude-code) · [ChatGPT](#chatgpt) · [Cursor](#cursor) · [VS Code](#vs-code) · [Other clients](#other-clients)) ·
