@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "acme-help": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://client.replyze.chat/api/mcp/kb/acme-help"]
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "acme-help": {
+      "type": "http",
+      "url": "https://client.replyze.chat/api/mcp/kb/acme-help"
+    }
+  }
+}
