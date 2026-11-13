@@ -1,0 +1,3 @@
+# The VS Code install link answers with a redirect to a vscode: URL, which only
+# VS Code can open; its format is checked by scripts/check-configs.mjs instead.
+^https://vscode\.dev/redirect\?url=vscode

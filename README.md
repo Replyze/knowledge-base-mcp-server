@@ -13,17 +13,33 @@ Turn your help center into an [MCP](https://modelcontextprotocol.io) server, so 
 
 This page documents the knowledge base MCP server that every [Replyze](https://replyze.chat/?utm_source=github&utm_medium=knowledge-base-mcp-server) public help center has. Replyze is AI customer support: an AI agent that answers from your docs, live chat for your website, and one inbox for chat, email, WhatsApp and Telegram.
 
+**[Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=cta-top)** · [Live demo](https://replyze.chat/?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=live-demo) · [Docs](https://github.com/Replyze/replyze)
+
 ```
 https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
 ```
 
+## Quickstart
+
+1. **Publish your help center.** [Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=quickstart), open **Knowledge Base → Public help center → Set up**, pick its address (say `acme-help`) and switch on **Publish the help center**. [Details](#turn-it-on).
+2. **Take the URL:** `https://client.replyze.chat/api/mcp/kb/acme-help`, with your address in place of `acme-help`.
+3. **Add it to an assistant.** In Claude Code:
+
+   ```bash
+   claude mcp add --transport http acme-help https://client.replyze.chat/api/mcp/kb/acme-help
+   ```
+
+   Then ask it something your articles answer. [Claude, ChatGPT, Cursor and VS Code](#connect-an-assistant) are below, and [one-click install links](#one-click-install-links) for your customers.
+
 ## Contents
 
 [Why](#why-put-your-help-center-in-an-ai-assistant) ·
+[Quickstart](#quickstart) ·
 [Turn it on](#turn-it-on) ·
 [Tools](#tools) ·
 [Connect an assistant](#connect-an-assistant) ([Claude](#claudeai-and-claude-desktop) · [Claude Code](#claude-code) · [ChatGPT](#chatgpt) · [Cursor](#cursor) · [VS Code](#vs-code) · [Other clients](#other-clients)) ·
 [Tell your customers](#tell-your-customers) ·
+[One-click install links](#one-click-install-links) ·
 [Protocol](#protocol) ·
 [Errors](#errors) ·
 [FAQ](#faq)
@@ -43,7 +59,7 @@ https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
 
 The MCP server is live at the same moment, at `https://client.replyze.chat/api/mcp/kb/acme-help`. The dashboard also shows the URL in **Settings → Integrations → Developer**, in the MCP card.
 
-The public help center is part of the paid plans and the free trial; see [pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=knowledge-base-mcp-server). When the help center is switched off, or the plan no longer includes it, the server is gone too (`404`). No account yet? [Sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server).
+Whether a workspace has the public help center depends on its plan; see [pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=knowledge-base-mcp-server). When the help center is switched off, or the plan no longer includes it, the server is gone too (`404`). No account yet? [Sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server).
 
 ## Tools
 
@@ -83,7 +99,7 @@ Replace `acme-help` with your slug. The name you give the server (`acme-help` be
 
 Add it as a **custom connector** with the URL `https://client.replyze.chat/api/mcp/kb/acme-help`. No authentication is needed.
 
-Or, in Claude Desktop only, through [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) (needs Node.js). Open Settings → Developer → Edit Config, add this to `claude_desktop_config.json` and restart Claude:
+Or, in Claude Desktop only, through [`mcp-remote`](https://github.com/punkpeye/mcp-remote) (needs Node.js). Open Settings → Developer → Edit Config, add this to `claude_desktop_config.json` and restart Claude:
 
 ```json
 {
@@ -152,17 +168,45 @@ Add this MCP server to your assistant and it will answer from our articles, with
 
 - **Claude:** Settings → Connectors → add a custom connector with the URL above.
 - **ChatGPT:** developer mode → create a connector with the URL above, no authentication.
-- **Cursor or VS Code:** add a remote (HTTP) MCP server with the URL above.
+- **VS Code:** [install it in one click](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522acme-help%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fclient.replyze.chat%252Fapi%252Fmcp%252Fkb%252Facme-help%2522%257D).
+- **Cursor:** add a remote (HTTP) MCP server with the URL above.
 
 It is read-only and needs no account. It only sees our published help articles.
 ```
+
+Replace `acme-help` in the URL and in the VS Code link (it appears there twice). To make the link for your address, see the next section.
+
+## One-click install links
+
+VS Code and Cursor open an install prompt from a link. Both take the server's configuration in the link, so you make one per help center address. This prints both for yours (Node.js 18 or newer; the formats are VS Code's [install URL handler](https://code.visualstudio.com/api/extension-guides/ai/mcp) and Cursor's [install links](https://cursor.com/docs/mcp/install-links)):
+
+```js
+// node install-links.mjs acme-help
+const slug = process.argv[2] ?? 'acme-help';
+const url = `https://client.replyze.chat/api/mcp/kb/${slug}`;
+
+// VS Code: vscode:mcp/install?<URL-encoded JSON>, wrapped in https://vscode.dev/redirect for web pages
+const vscode = 'vscode:mcp/install?' + encodeURIComponent(JSON.stringify({ name: slug, type: 'http', url }));
+console.log('VS Code:', 'https://vscode.dev/redirect?url=' + encodeURIComponent(vscode));
+
+// Cursor: the server's config as base64 JSON
+const config = Buffer.from(JSON.stringify({ url })).toString('base64');
+console.log('Cursor: ', `cursor://anysphere.cursor-deeplink/mcp/install?name=${encodeURIComponent(slug)}&config=${config}`);
+```
+
+For `acme-help` that gives:
+
+- VS Code: [`https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall...`](https://vscode.dev/redirect?url=vscode%3Amcp%2Finstall%3F%257B%2522name%2522%253A%2522acme-help%2522%252C%2522type%2522%253A%2522http%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fclient.replyze.chat%252Fapi%252Fmcp%252Fkb%252Facme-help%2522%257D)
+- Cursor: `cursor://anysphere.cursor-deeplink/mcp/install?name=acme-help&config=eyJ1cmwiOiJodHRwczovL2NsaWVudC5yZXBseXplLmNoYXQvYXBpL21jcC9rYi9hY21lLWhlbHAifQ==`
+
+The VS Code link is an ordinary `https` link and works anywhere. The Cursor link starts with `cursor://`, which only some pages keep: GitHub READMEs drop such links, and so do Replyze help center articles (they keep `https`, `mailto` and `tel` links only). Put it on your own website, with Cursor's button: `https://cursor.com/deeplink/mcp-install-dark.svg` (or `mcp-install-light.svg`). [`examples/install-links.mjs`](examples/install-links.mjs) is the script above.
 
 ## Protocol
 
 For client authors and debugging. The server follows the MCP spec's Streamable HTTP transport, stateless:
 
 - JSON-RPC 2.0 messages are POSTed to the URL, and each request gets one JSON answer. There is no event stream and no session: GET and DELETE answer `405`.
-- Protocol version `2025-06-18`. Clients on `2025-03-26` or `2024-11-05` are answered in their version. An `MCP-Protocol-Version` header with another version gets `400`.
+- Protocol versions `2025-06-18`, `2025-03-26` and `2024-11-05`: `initialize` answers in the client's version when it is one of these, and in `2025-06-18` otherwise. A request whose `MCP-Protocol-Version` header names another version gets `400`; that is how clients that speak both the `2026-07-28` revision and the `initialize`-based ones find out to fall back to `initialize`.
 - Methods: `initialize`, `ping`, `tools/list`, `tools/call`. Notifications get `202` with no body. Batches (older clients) are accepted.
 - Tool results come both as text (the JSON, which every client reads) and as `structuredContent`. A tool that fails returns `isError: true` with a message.
 - Requests are rate limited per IP. Answers carry `X-RateLimit-Limit` and `X-RateLimit-Remaining`, and are never cached (`Cache-Control: no-store`).
@@ -190,6 +234,7 @@ curl -s "$URL" -H "Content-Type: application/json" \
 | `429` | Too many requests from your IP. Wait `Retry-After` seconds. | JSON-RPC error `-32600`, "Too many requests. Try again in N seconds." |
 | `405` | A GET or DELETE. | The server takes POST only. |
 | `400` | A body that isn't JSON (`-32700`), or an `MCP-Protocol-Version` header with a version the server doesn't speak (`-32600`, with the supported versions). | JSON-RPC error. |
+| `200` | An unknown method. | JSON-RPC error `-32601`. |
 | `200` | An unknown tool. | JSON-RPC error `-32602`. |
 | `200` | Arguments that don't fit the tool's schema. | A tool result with `isError: true` and `structuredContent.error` = `invalid_arguments`. |
 | `200` | `get_article` for an article that isn't published in this help center. | A tool result with `isError: true` and `structuredContent.error` = `tool_error`: "This help center has no published article like that. Use search_articles to find one." |
@@ -215,6 +260,10 @@ If the help center has articles in several languages, `search_articles` takes a 
 - [add-live-chat-to-website](https://github.com/Replyze/add-live-chat-to-website): the chat on any website, platform by platform
 
 The tools, the protocol and the error behavior on this page follow the server's source and its test suite (November 2026).
+
+## For registries
+
+[`server.json`](server.json) describes this server in the format of the official [MCP Registry](https://registry.modelcontextprotocol.io). How it gets published, and to which other directories: [RELEASING.md](RELEASING.md). CI checks the example configs, `server.json` and the live server's error answers on every push.
 
 ## License
 

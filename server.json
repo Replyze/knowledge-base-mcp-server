@@ -1,0 +1,33 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Replyze/knowledge-base-mcp-server",
+  "title": "Replyze help center",
+  "description": "Search and read the published articles of a Replyze help center. Read-only, no key.",
+  "version": "1.0.0",
+  "websiteUrl": "https://github.com/Replyze/knowledge-base-mcp-server",
+  "repository": {
+    "url": "https://github.com/Replyze/knowledge-base-mcp-server",
+    "source": "github",
+    "id": "1456011744"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/Replyze/.github/main/assets/mark-square.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://client.replyze.chat/api/mcp/kb/{help_center_slug}",
+      "variables": {
+        "help_center_slug": {
+          "description": "The help center's address: the last part of https://client.replyze.chat/help/<slug>.",
+          "isRequired": true,
+          "placeholder": "acme-help"
+        }
+      }
+    }
+  ]
+}
