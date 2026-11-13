@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://replyze.chat/?utm_source=github&utm_medium=knowledge-base-mcp-server">
+  <a href="https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Replyze/.github/main/assets/logo-on-dark.png">
       <img src="https://raw.githubusercontent.com/Replyze/.github/main/assets/logo-on-light.png" alt="Replyze" height="48">
@@ -11,9 +11,9 @@
 
 Turn your help center into an [MCP](https://modelcontextprotocol.io) server, so any AI assistant can search your published articles, read them and link to them. Your customers ask their own assistant and get your current answer instead of a guess. Your developers ask from Cursor or VS Code without leaving the editor. It is a **remote server with no key**: you share one URL. There is nothing to install, host or keep in sync, because the help center is the server.
 
-This page documents the knowledge base MCP server that every [Replyze](https://replyze.chat/?utm_source=github&utm_medium=knowledge-base-mcp-server) public help center has. Replyze is AI customer support: an AI agent that answers from your docs, live chat for your website, and one inbox for chat, email, WhatsApp and Telegram.
+This page documents the knowledge base MCP server that every [Replyze](https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server) public help center has. Replyze is AI customer support: an AI agent that answers from your docs, live chat for your website, and one inbox for chat, email, WhatsApp and Telegram.
 
-**[Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=cta-top)** · [Live demo](https://replyze.chat/?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=live-demo) · [Docs](https://github.com/Replyze/replyze)
+**[Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server&utm_content=cta-top)** · [Live demo](https://replyze.chat/?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server&utm_content=live-demo) · [Docs](https://github.com/Replyze/replyze)
 
 ```
 https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
@@ -21,7 +21,7 @@ https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
 
 ## Quickstart
 
-1. **Publish your help center.** [Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server&utm_content=quickstart), open **Knowledge Base → Public help center → Set up**, pick its address (say `acme-help`) and switch on **Publish the help center**. [Details](#turn-it-on).
+1. **Publish your help center.** [Create a free account](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server&utm_content=quickstart), open **Knowledge Base → Public help center → Set up**, pick its address (say `acme-help`) and switch on **Publish the help center**. [Details](#turn-it-on).
 2. **Take the URL:** `https://client.replyze.chat/api/mcp/kb/acme-help`, with your address in place of `acme-help`.
 3. **Add it to an assistant.** In Claude Code:
 
@@ -59,7 +59,7 @@ https://client.replyze.chat/api/mcp/kb/<your-help-center-slug>
 
 The MCP server is live at the same moment, at `https://client.replyze.chat/api/mcp/kb/acme-help`. The dashboard also shows the URL in **Settings → Integrations → Developer**, in the MCP card.
 
-Whether a workspace has the public help center depends on its plan; see [pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=knowledge-base-mcp-server). When the help center is switched off, or the plan no longer includes it, the server is gone too (`404`). No account yet? [Sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=knowledge-base-mcp-server).
+Whether a workspace has the public help center depends on its plan; see [pricing](https://replyze.chat/pricing?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server). When the help center is switched off, or the plan no longer includes it, the server is gone too (`404`). No account yet? [Sign up](https://client.replyze.chat/register?utm_source=github&utm_medium=referral&utm_campaign=knowledge-base-mcp-server).
 
 ## Tools
 
